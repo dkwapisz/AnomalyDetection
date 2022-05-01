@@ -58,6 +58,7 @@ mkl-service=2.4.0=py39h2bbff1b_0
 mkl_fft=1.3.1=py39h277e83a_0
 mkl_random=1.2.2=py39hf11a4ad_0
 multidict=5.1.0=py39h2bbff1b_2
+nltk=3.7=pyhd3eb1b0_0
 numexpr=2.8.1=py39hb80d3ca_0
 numpy=1.21.5=py39ha4e8547_0
 numpy-base=1.21.5=py39hc2deb75_0
@@ -81,6 +82,7 @@ python=3.9.7=h6244533_1
 python-dateutil=2.8.2=pyhd3eb1b0_0
 python-flatbuffers=1.12=pyhd3eb1b0_0
 pytz=2021.3=pyhd3eb1b0_0
+regex=2022.3.15=py39h2bbff1b_0
 requests=2.27.1=pyhd3eb1b0_0
 requests-oauthlib=1.3.0=py_0
 rsa=4.7.2=pyhd3eb1b0_1
@@ -99,6 +101,7 @@ tensorflow-estimator=2.6.0=pyh7b7c402_0
 tensorflow-gpu=2.6.0=h17022bd_0
 termcolor=1.1.0=py39haa95532_1
 threadpoolctl=2.2.0=pyh0d69192_0
+tqdm=4.64.0=py39haa95532_0
 typing-extensions=3.10.0.2=hd3eb1b0_0
 typing_extensions=3.10.0.2=pyh06a4308_0
 tzdata=2021e=hda174b7_0
