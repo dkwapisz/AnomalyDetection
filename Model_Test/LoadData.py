@@ -6,7 +6,7 @@ import numpy as np
 nltk.download('punkt')
 
 
-filepath = './Data/SMSSpamCollection'
+filepath = '../Model_Test/Data/SMSSpamCollection'
 
 with open(filepath, encoding='utf8') as file:
     lines = file.readlines()
@@ -22,7 +22,7 @@ for sentence in lines:
 countHam = 0
 countSpam = 0
 
-with open('./Data/Spam_OnlyAlphaAndDigit.csv', 'w', newline='', encoding='utf8') as csvfile:
+with open('../Model_Test/Data/Spam_OnlyAlphaAndDigit.csv', 'w', newline='', encoding='utf8') as csvfile:
     fieldnames = ['label', 'sentence']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
