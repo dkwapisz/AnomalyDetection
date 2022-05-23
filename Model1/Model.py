@@ -39,7 +39,7 @@ padded_sms = pad_sequences(encoded_sms, maxlen=max_length, padding='post')
 embedding_index = dict()
 
 # Download this file from https://github.com/stanfordnlp/GloVe -> glove.840B.300d.zip, but don't push it into github.
-f = open('glove.840B.300d.txt', encoding='utf8')
+f = open('../Datasets/glove.840B.300d.txt', encoding='utf8')
 for line in f:
     values = line.split()
     word = values[0]

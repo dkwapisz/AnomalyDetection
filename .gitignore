@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # Large files
-Model1/glove.840B.300d.txt
+Datasets/glove.840B.300d.txt

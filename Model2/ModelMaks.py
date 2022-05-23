@@ -63,11 +63,10 @@ vocab_size = len(tokenizer.word_index) + 1
 y_train = tokenizer.texts_to_sequences(y_train)
 y_train = pad_sequences(y_train, maxlen=max_length, padding='post')
 
-
 embedding_index = dict()
 
 # Download this file from https://github.com/stanfordnlp/GloVe -> glove.840B.300d.zip, but don't push it into github.
-f = open('glove.840B.300d.txt', encoding='utf8')
+f = open('../Datasets/glove.840B.300d.txt', encoding='utf8')
 for line in f:
     values = line.split()
     word = values[0]
@@ -102,10 +101,10 @@ model = Sequential()
 model.add(Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=max_length, trainable=True))
 model.add(GRU(512, return_sequences=True))
 model.add(Dropout(0.2))
-model.add(Dense(1,  activation='sigmoid'))
+model.add(Dense(1, activation='sigmoid'))
 model.compile(optimizer='RMSprop', loss='binary_crossentropy', metrics=['accuracy'])
-history = model.fit(y_train, X_train,validation_split=0.2,batch_size=64, shuffle=True, epochs=7)
+history = model.fit(y_train, X_train, validation_split=0.2, batch_size=64, shuffle=True, epochs=7)
 
 accPlot(history)
 
-model.save('MaksMOdel.h5')
+model.save('MaksModel.h5')
