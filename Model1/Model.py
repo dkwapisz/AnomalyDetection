@@ -5,36 +5,44 @@ import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
-from keras.layers import Dense, Flatten, Embedding, CuDNNLSTM
+from keras.layers import Dense, Flatten, Embedding, CuDNNLSTM, Dropout
+from sklearn.model_selection import train_test_split
 
-allSms = []
-allLabels = []
+all_X = []
+all_y = []
 allSentences = []
 
 with open('../Datasets/SpamCSV.csv', 'r', newline='', encoding='utf8') as csvfile:
     smsReader = csv.DictReader(csvfile)
     for row in smsReader:
         sentence = str(row['sms']).split(sep=" ")
-        allSms.append(row['sms'])
-        allLabels.append(row['sentiment'])
+        all_X.append(row['sms'])
+        all_y.append(row['sentiment'])
         allSentences.append(sentence)
 
-for i in range(0, len(allLabels)):
-    allLabels[i] = np.array(int(allLabels[i]))
+for i in range(0, len(all_y)):
+    all_y[i] = np.array(int(all_y[i]))
 
-allLabels = np.array(allLabels)
+all_y = np.array(all_y)
+
+X_train, X_rem, y_train, y_rem = train_test_split(all_X, all_y, train_size=0.6)
+X_test, X_val, y_test, y_val = train_test_split(X_rem, y_rem, train_size=0.5)
 
 tokenizer = Tokenizer()
-tokenizer.fit_on_texts(allSms)
+tokenizer.fit_on_texts(all_X)
 vocab_size = len(tokenizer.word_index) + 1
 
-encoded_sms = tokenizer.texts_to_sequences(allSms)
+encoded_sms_train = tokenizer.texts_to_sequences(X_train)
+encoded_sms_test = tokenizer.texts_to_sequences(X_test)
+encoded_sms_val = tokenizer.texts_to_sequences(X_val)
 
 max_length = len(max(allSentences, key=lambda coll: len(coll)))  # max word length of sms
 
 allSentence = []
 
-padded_sms = pad_sequences(encoded_sms, maxlen=max_length, padding='post')
+padded_sms_train = pad_sequences(encoded_sms_train, maxlen=max_length, padding='post')
+padded_sms_test = pad_sequences(encoded_sms_test, maxlen=max_length, padding='post')
+padded_sms_val = pad_sequences(encoded_sms_val, maxlen=max_length, padding='post')
 
 embedding_index = dict()
 
@@ -68,12 +76,14 @@ for word, i in tokenizer.word_index.items():
 
 model = Sequential()
 model.add(Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=max_length, trainable=False))
-#model.add(CuDNNLSTM(300))
+model.add(CuDNNLSTM(500, return_sequences=True))
+model.add(Dropout(0.3))
 model.add(Flatten())
 model.add(Dense(1, activation='sigmoid'))
 
 model.compile(optimizer='RMSprop', loss='binary_crossentropy', metrics=['accuracy'])
-model.fit(padded_sms, allLabels, epochs=5)
+model.fit(padded_sms_train, y_train, epochs=5, validation_data=(padded_sms_val, y_val))
 
-model.save('Model1_withoutLSTM.h5')
+model.save('Model2_LSTM_98.h5')
 
+model.evaluate(padded_sms_test, y_test)
