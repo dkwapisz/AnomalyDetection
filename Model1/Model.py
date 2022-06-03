@@ -5,7 +5,7 @@ import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
-from keras.layers import Dense, Flatten, Embedding, CuDNNLSTM, Dropout
+from keras.layers import Dense, Flatten, Embedding, CuDNNLSTM, Dropout, Bidirectional
 from sklearn.model_selection import train_test_split
 
 all_X = []
@@ -76,7 +76,7 @@ for word, i in tokenizer.word_index.items():
 
 model = Sequential()
 model.add(Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=max_length, trainable=False))
-model.add(CuDNNLSTM(500, return_sequences=True))
+model.add(Bidirectional(CuDNNLSTM(512, return_sequences=True)))
 model.add(Dropout(0.3))
 model.add(Flatten())
 model.add(Dense(1, activation='sigmoid'))
@@ -84,6 +84,6 @@ model.add(Dense(1, activation='sigmoid'))
 model.compile(optimizer='RMSprop', loss='binary_crossentropy', metrics=['accuracy'])
 model.fit(padded_sms_train, y_train, epochs=5, validation_data=(padded_sms_val, y_val))
 
-model.save('Model2_LSTM_98.h5')
+model.save('Model3_LSTM.h5')
 
 model.evaluate(padded_sms_test, y_test)
