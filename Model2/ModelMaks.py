@@ -2,71 +2,42 @@ import csv
 import random
 
 import pandas as pd
-import keras_preprocessing
 import numpy as np
+import Utils.Utils as Utils
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Embedding, CuDNNLSTM, SimpleRNN, BatchNormalization, GRU, Dropout
-import string
-import nltk
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.text import Tokenizer
-import matplotlib.pyplot as plt
-
-
-def vectorizeSequences(sequences, dimension):
-    results = np.zeros((len(sequences), dimension))
-    for i, sequence in enumerate(sequences):
-        results[i, sequence] = 1
-
-    return results
-
-def accPlot(history):
-    acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
-
-    epochs = range(1, len(acc) + 1)
-
-    plt.plot(epochs, acc, 'ro', label='Training accuracy')
-    plt.plot(epochs, val_acc, 'r', label='Validation accuracy')
-    plt.title('Accuracy of training and validation')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-
-    plt.show()
-
-
-def remove_punctuation(text):
-    punctuationfree = "".join([i for i in text if i not in string.punctuation])
-    return punctuationfree
-
 
 data = pd.read_csv("../Datasets/SpamCSV.csv", encoding="ISO-8859-1")
 pd.set_option('display.max_colwidth', None)
 data = data[['sms', 'sentiment']]
 
-X = data.drop(columns=['sms']).copy()
-y = data['sms']
+y = data.drop(columns=['sms']).copy()
+X = data['sms']
 
-X_train, X_rem, y_train, y_rem = train_test_split(X, y, train_size=0.8)
+print(X)
+print(y)
+y_train, y_rem, X_train, X_rem = train_test_split(y, X, train_size=0.7)
 
-y_train = y_train.apply(lambda x: remove_punctuation(x))
-y_train = y_train.apply(lambda x: x.lower())
+X_train = X_train.apply(lambda x: Utils.remove_punctuation(x))
+X_train = X_train.apply(lambda x: x.lower())
 
-max_length = len(max(y_train, key=lambda coll: len(coll)))
+max_length = len(max(X_train, key=lambda coll: len(coll)))
 
 tokenizer = Tokenizer()
-tokenizer.fit_on_texts(y_train)
+tokenizer.fit_on_texts(X_train)
 vocab_size = len(tokenizer.word_index) + 1
 
-y_train = tokenizer.texts_to_sequences(y_train)
-y_train = pad_sequences(y_train, maxlen=max_length, padding='post')
+X_train = tokenizer.texts_to_sequences(X_train)
+X_train = pad_sequences(X_train, maxlen=max_length, padding='post')
 
 embedding_index = dict()
 
 # Download this file from https://github.com/stanfordnlp/GloVe -> glove.840B.300d.zip, but don't push it into github.
-f = open('../Datasets/glove.840B.300d.txt', encoding='utf8')
+f = open('../Model1/glove.840B.300d.txt', encoding='utf8')
+
 for line in f:
     values = line.split()
     word = values[0]
@@ -103,8 +74,21 @@ model.add(GRU(512, return_sequences=True))
 model.add(Dropout(0.2))
 model.add(Dense(1, activation='sigmoid'))
 model.compile(optimizer='RMSprop', loss='binary_crossentropy', metrics=['accuracy'])
-history = model.fit(y_train, X_train, validation_split=0.2, batch_size=64, shuffle=True, epochs=7)
+history = model.fit(x=X_train, y=y_train, validation_split=0.2, batch_size=32, shuffle=True, epochs=4)
 
-accPlot(history)
+print(vocab_size)
+Utils.accPlot(history)
+Utils.lossPlot(history)
+
+X_rem = X_rem.apply(lambda x: Utils.remove_punctuation(x))
+X_rem = X_rem.apply(lambda x: x.lower())
+
+max_length = len(max(X_rem, key=lambda coll: len(coll)))
+
+# tokenizer = Tokenizer()
+# vocab_size = len(tokenizer.word_index) + 1
+X_rem = tokenizer.texts_to_sequences(X_rem)
+X_rem = pad_sequences(X_rem, maxlen=max_length, padding='post')
+response = model.evaluate(x=X_rem, y=y_rem)
 
 model.save('MaksModel.h5')
