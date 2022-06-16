@@ -1,6 +1,9 @@
 import csv
 import random
 
+import keras.models
+
+from CreateEmbeddingLayer import createEmbedding
 import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -44,38 +47,14 @@ padded_sms_train = pad_sequences(encoded_sms_train, maxlen=max_length, padding='
 padded_sms_test = pad_sequences(encoded_sms_test, maxlen=max_length, padding='post')
 padded_sms_val = pad_sequences(encoded_sms_val, maxlen=max_length, padding='post')
 
-embedding_index = dict()
-
-# Download this file from https://github.com/stanfordnlp/GloVe -> glove.840B.300d.zip, but don't push it into github.
-f = open('../Datasets/glove.840B.300d.txt', encoding='utf8')
-for line in f:
-    values = line.split()
-    word = values[0]
-
-    try:
-        coefs = np.asarray(values[1:], dtype='float32')
-    except ValueError:
-        for pos in range(len(values[1:])):
-            if pos == '.' or pos == 'name@domain.com':
-                values[pos + 1] = random.randint(-1, 1)
-                coefs = np.asarray(values[1:], dtype='float32')
-
-    embedding_index[word] = coefs
-f.close()
-
-print('Loaded %s word vectors.' % len(embedding_index))
-
-embedding_matrix = np.zeros((vocab_size, 300))
-
-for word, i in tokenizer.word_index.items():
-    embedding_vector = embedding_index.get(word)
-    if embedding_vector is not None:
-        embedding_matrix[i] = embedding_vector
+# This creates embedding
+# createEmbedding(vocab_size=vocab_size, tokenizer=tokenizer, max_length=max_length)
 
 # ---------- MODEL ------------
+embeddingLayer = keras.models.load_model("EmbeddingLayer.h5")
 
 model = Sequential()
-model.add(Embedding(vocab_size, 300, weights=[embedding_matrix], input_length=max_length, trainable=False))
+model.add(embeddingLayer)
 model.add(Bidirectional(CuDNNLSTM(512, return_sequences=True)))
 model.add(Dropout(0.3))
 model.add(Flatten())
@@ -84,6 +63,6 @@ model.add(Dense(1, activation='sigmoid'))
 model.compile(optimizer='RMSprop', loss='binary_crossentropy', metrics=['accuracy'])
 model.fit(padded_sms_train, y_train, epochs=5, validation_data=(padded_sms_val, y_val))
 
-model.save('Model3_LSTM.h5')
+model.save('NextModel.h5')
 
 model.evaluate(padded_sms_test, y_test)
