@@ -1,3 +1,7 @@
+#  -------------------------------------------
+#  DEPRECATED - MODEL MOVED TO COLLAB NOTEBOOK
+#  -------------------------------------------
+
 from random import random
 
 import numpy as np
